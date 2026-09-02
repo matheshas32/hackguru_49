@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EventTrust AI - College Event Authenticity & Discovery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">EventTrust<span class="highlight">.AI</span></span>
+          <span class="brand-tagline">College Event Authenticity & Scanner</span>
+        </div>
+      </div>
+
+      <nav class="nav-tabs">
+        <button class="nav-btn active" data-tab="scanner-tab">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Poster Scanner
+        </button>
+        <button class="nav-btn" data-tab="unstop-tab">
+          <i class="fa-solid fa-globe"></i> Web Link Scanner
+        </button>
+        <button class="nav-btn" data-tab="events-tab">
+          <i class="fa-solid fa-calendar-days"></i> College Events
+        </button>
+        <button class="nav-btn" data-tab="host-tab">
+          <i class="fa-solid fa-plus-circle"></i> Host Event
+        </button>
+        <button class="nav-btn" data-tab="analytics-tab">
+          <i class="fa-solid fa-chart-pie"></i> Safety Metrics
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <a href="/static/allcollegeevent-demo.html" class="btn btn-outline-sm" title="Open AllCollegeEvent.com Embedded Integration Demo">
+          <i class="fa-solid fa-graduation-cap"></i> AllCollegeEvent Demo
+        </a>
+        <button class="btn btn-outline-sm" onclick="openExtensionModal()">
+          <i class="fa-brands fa-chrome"></i> Extension
+        </button>
+        <a href="/docs" target="_blank" class="btn btn-outline-sm">
+          <i class="fa-solid fa-book"></i> API Docs
+        </a>
+        <div class="model-badge" title="Trained MobileNetV2 Poster Authenticity Model Active">
+          <span class="status-dot online"></span> poster_model.keras
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="main-content">
+    
+    <!-- ================= TAB 1: POSTER SCANNER (FILE UPLOAD) ================= -->
+    <section id="scanner-tab" class="tab-pane active">
+      <div class="hero-section">
+        <div class="hero-badge">
+          <i class="fa-solid fa-microchip"></i> Deep Learning Verification Engine
+        </div>
+        <h1 class="hero-title">Verify College Event Poster Authenticity</h1>
+        <p class="hero-subtitle">
+          Upload any event flyer to detect fake contests, scam giveaways, forged details, and extract verified QR code payloads instantly.
+        </p>
+      </div>
+
+      <div class="scanner-grid">
+        <!-- Left: Upload Zone -->
+        <div class="glass-card upload-card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload Event Poster</h3>
+            <span class="badge-pill">AI Powered</span>
+          </div>
+
+          <div class="drop-zone" id="poster-drop-zone">
+            <input type="file" id="poster-file-input" accept="image/jpeg,image/png,image/webp,image/bmp" hidden />
+            <div class="drop-content" id="drop-prompt">
+              <div class="upload-icon-circle">
+                <i class="fa-solid fa-file-image"></i>
+              </div>
+              <p class="drop-title">Drag & drop your event poster here</p>
+              <p class="drop-sub">Supports JPG, PNG, WEBP (Max 10MB)</p>
+              <button type="button" class="btn btn-primary" onclick="document.getElementById('poster-file-input').click()">
+                <i class="fa-solid fa-folder-open"></i> Browse Poster File
+              </button>
+            </div>
+
+            <div class="preview-container" id="preview-box" style="display: none;">
+              <img id="poster-preview-img" src="" alt="Poster Preview" />
+              <button type="button" class="btn-remove-preview" id="btn-clear-preview" title="Remove poster">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Test Samples -->
+          <div class="sample-posters-section">
+            <span class="sample-label">Or test with dataset samples:</span>
+            <div class="sample-buttons">
+              <button type="button" class="sample-btn real" onclick="loadSamplePoster('real')">
+                <i class="fa-solid fa-check-circle"></i> Real Hackathon
+              </button>
+              <button type="button" class="sample-btn fake" onclick="loadSamplePoster('fake')">
+                <i class="fa-solid fa-triangle-exclamation"></i> Fake Giveaway
+              </button>
+              <button type="button" class="sample-btn qr" onclick="loadSamplePoster('symposium')">
+                <i class="fa-solid fa-qrcode"></i> Real Symposium + QR
+              </button>
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-gradient-action" id="btn-run-scan" disabled>
+            <i class="fa-solid fa-brain"></i> Scan & Verify Authenticity
+          </button>
+        </div>
+
+        <!-- Right: Verification Result -->
+        <div class="glass-card results-card" id="scan-results-container">
+          <!-- Empty State -->
+          <div class="empty-state" id="results-empty-state">
+            <div class="empty-icon">
+              <i class="fa-solid fa-shield-check"></i>
+            </div>
+            <h4>Ready to Scan</h4>
+            <p>Upload a poster or select a sample image on the left and click <strong>Scan & Verify Authenticity</strong>.</p>
+          </div>
+
+          <!-- Loading State -->
+          <div class="loading-state" id="results-loading-state" style="display: none;">
+            <div class="pulse-radar"></div>
+            <h4>Analyzing Poster Architecture...</h4>
+            <p>Running MobileNetV2 feature extraction & multi-pass QR decoding...</p>
+          </div>
+
+          <!-- Result Content -->
+          <div class="results-content" id="results-data-state" style="display: none;">
+            <div class="verdict-banner" id="verdict-banner">
+              <div class="verdict-main">
+                <div class="verdict-icon-wrap" id="verdict-icon">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <div>
+                  <div class="verdict-tag" id="verdict-tag">REAL EVENT</div>
+                  <div class="verdict-status" id="verdict-status">LOW RISK • VERIFIED AUTHENTIC</div>
+                </div>
+              </div>
+              <div class="trust-score-badge">
+                <span class="trust-num" id="verdict-trust-score">95</span>
+                <span class="trust-denom">/ 100</span>
+                <span class="trust-lbl">Trust Score</span>
+              </div>
+            </div>
+
+            <!-- Probability Breakdown -->
+            <div class="metric-section">
+              <h4 class="section-title"><i class="fa-solid fa-chart-simple"></i> Authenticity Probability</h4>
+              <div class="prob-bars-grid">
+                <div class="prob-box real-box">
+                  <div class="prob-header">
+                    <span>Authentic (Real)</span>
+                    <strong id="prob-real-val">98.5%</strong>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill real" id="prob-real-bar" style="width: 98.5%;"></div>
+                  </div>
+                </div>
+                <div class="prob-box fake-box">
+                  <div class="prob-header">
+                    <span>Forged / Scam (Fake)</span>
+                    <strong id="prob-fake-val">1.5%</strong>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill fake" id="prob-fake-bar" style="width: 1.5%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Confidence & QR Inspection -->
+            <div class="inspection-grid">
+              <div class="inspect-box">
+                <div class="inspect-label"><i class="fa-solid fa-gauge-high"></i> Model Confidence</div>
+                <div class="inspect-value" id="inspect-confidence">98.5%</div>
+                <div class="inspect-sub">MobileNetV2 Sigmoid Output</div>
+              </div>
+
+              <div class="inspect-box">
+                <div class="inspect-label"><i class="fa-solid fa-qrcode"></i> QR Detection</div>
+                <div class="inspect-value" id="inspect-qr-status">DETECTED</div>
+                <div class="inspect-sub" id="inspect-qr-result">BENIGN LINK</div>
+              </div>
+            </div>
+
+            <!-- QR Payload Box -->
+            <div class="qr-payload-card" id="qr-payload-container">
+              <div class="qr-payload-header">
+                <span><i class="fa-solid fa-link"></i> Decoded QR Payload Data:</span>
+                <span class="badge-status-qr" id="qr-sec-badge">SAFE</span>
+              </div>
+              <div class="qr-data-text" id="qr-data-text">
+                https://iitm-hacknation2026.org/register
+              </div>
+              <a href="#" target="_blank" class="btn btn-sm btn-qr-visit" id="qr-link-visit" style="display: none;">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Decoded Link
+              </a>
+            </div>
+
+            <!-- Action footer -->
+            <div class="result-actions">
+              <button type="button" class="btn btn-secondary" onclick="prefillCreateFromScan()">
+                <i class="fa-solid fa-plus"></i> Publish this as College Event
+              </button>
+              <button type="button" class="btn btn-outline" onclick="resetScanner()">
+                <i class="fa-solid fa-rotate-left"></i> Scan Another
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 2: WEB LINK SCANNER ================= -->
+    <section id="unstop-tab" class="tab-pane">
+      <div class="hero-section">
+        <div class="hero-badge">
+          <i class="fa-solid fa-link"></i> Live Web Link Verification
+        </div>
+        <h1 class="hero-title">Verify Any AllCollegeEvent.com or Web Event by URL</h1>
+        <p class="hero-subtitle">
+          Paste any competition, symposium, or hackathon link from AllCollegeEvent.com or Unstop. EventTrust AI will automatically extract the poster image and check for authenticity and fraudulent patterns.
+        </p>
+      </div>
+
+      <div class="unstop-scanner-container" style="max-width: 900px; margin: 0 auto;">
+        <div class="glass-card" style="margin-bottom: 2rem;">
+          <div class="unstop-input-form" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 320px; position: relative;">
+              <i class="fa-solid fa-globe" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+              <input type="url" id="unstop-url-input" placeholder="Paste event URL (e.g. https://allcollegeevent.com/events/... or https://unstop.com/...)" style="width: 100%; padding: 0.85rem 1rem 0.85rem 2.5rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-card); border-radius: var(--radius-sm); color: #fff; font-size: 0.95rem; outline: none;" />
+            </div>
+            <button type="button" class="btn btn-primary" id="btn-scan-unstop" style="padding: 0.85rem 1.5rem;">
+              <i class="fa-solid fa-shield-halved"></i> Verify URL
+            </button>
+          </div>
+
+          <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+            <span>Try sample event URLs:</span>
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.4rem; flex-wrap: wrap;">
+              <button type="button" class="sample-btn" onclick="setUnstopUrl('https://unstop.com/hackathons/iit-madras-shaastra-ai-hackathon-2026')">
+                <i class="fa-solid fa-cube"></i> IIT Madras AI Hackathon
+              </button>
+              <button type="button" class="sample-btn" onclick="setUnstopUrl('https://unstop.com/competitions/national-coding-olympiad-ceg')">
+                <i class="fa-solid fa-code"></i> National Coding Olympiad
+              </button>
+              <button type="button" class="sample-btn fake" onclick="setUnstopUrl('https://unstop.com/events/free-iphone-giveaway-telegram-contest')">
+                <i class="fa-solid fa-triangle-exclamation"></i> Suspicious Contest URL
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unstop Results Card -->
+        <div class="glass-card" id="unstop-results-box" style="display: none;">
+          <div class="loading-state" id="unstop-loading" style="display: none;">
+            <div class="pulse-radar"></div>
+            <h4>Fetching Unstop Page & Extracting Poster...</h4>
+            <p>Downloading event banner and running deep-learning authenticity inference...</p>
+          </div>
+
+          <div id="unstop-result-content" style="display: none;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 3: COLLEGE EVENTS FEED ================= -->
+    <section id="events-tab" class="tab-pane">
+      <div class="feed-header">
+        <div>
+          <h2>Discover Verified College Events</h2>
+          <p class="feed-sub">Browse hackathons, technical symposiums, and cultural fests with AI verification status.</p>
+        </div>
+        <button class="btn btn-primary" onclick="switchToTab('host-tab')">
+          <i class="fa-solid fa-calendar-plus"></i> Host New Event
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="glass-card filter-toolbar">
+        <div class="search-input-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="filter-search" placeholder="Search event title, college, or topic..." />
+        </div>
+
+        <div class="filter-controls">
+          <select id="filter-category" class="filter-select">
+            <option value="ALL">All Categories</option>
+            <option value="Hackathon">Hackathon</option>
+            <option value="Symposium">Symposium</option>
+            <option value="Workshop">Workshop</option>
+            <option value="Cultural">Cultural</option>
+            <option value="Bait/Contest">Contest / Giveaway</option>
+          </select>
+
+          <select id="filter-status" class="filter-select">
+            <option value="ALL">All Verifications</option>
+            <option value="REAL">🟢 Verified Authentic Only</option>
+            <option value="SUSPICIOUS">🔴 Flagged / Suspicious</option>
+          </select>
+
+          <button class="btn btn-outline" id="btn-refresh-events">
+            <i class="fa-solid fa-arrows-rotate"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Events Grid -->
+      <div class="events-grid" id="events-grid-container">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- ================= TAB 4: HOST EVENT ================= -->
+    <section id="host-tab" class="tab-pane">
+      <div class="form-container">
+        <div class="glass-card host-form-card">
+          <div class="card-header">
+            <div>
+              <h3><i class="fa-solid fa-bullhorn"></i> Submit & Verify College Event</h3>
+              <p class="card-subtitle">Every submitted event poster is automatically verified by EventTrust AI before publishing.</p>
+            </div>
+            <span class="badge-pill secure"><i class="fa-solid fa-lock"></i> Auto-Verified</span>
+          </div>
+
+          <form id="create-event-form" class="event-form">
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="event-title">Event Title <span class="req">*</span></label>
+                <input type="text" id="event-title" required placeholder="e.g. InnovateX 2026: National Hackathon" />
+              </div>
+
+              <div class="form-group">
+                <label for="event-college">College / University Name <span class="req">*</span></label>
+                <input type="text" id="event-college" required placeholder="e.g. Indian Institute of Technology Madras" />
+              </div>
+
+              <div class="form-group">
+                <label for="event-category">Category <span class="req">*</span></label>
+                <select id="event-category" required>
+                  <option value="Hackathon">Hackathon</option>
+                  <option value="Symposium">Symposium</option>
+                  <option value="Workshop">Workshop</option>
+                  <option value="Cultural">Cultural Fest</option>
+                  <option value="Tech Talk">Tech Talk / Guest Lecture</option>
+                  <option value="Sports">Sports Tournament</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="event-date">Date & Time <span class="req">*</span></label>
+                <input type="text" id="event-date" required placeholder="e.g. 2026-09-25 09:30 AM" />
+              </div>
+
+              <div class="form-group">
+                <label for="event-venue">Campus Venue / Location <span class="req">*</span></label>
+                <input type="text" id="event-venue" required placeholder="e.g. Central Auditorium, Main Campus" />
+              </div>
+
+              <div class="form-group">
+                <label for="event-reg-url">Official Registration / Ticketing Link</label>
+                <input type="url" id="event-reg-url" placeholder="https://college.edu/events/register" />
+              </div>
+
+              <div class="form-group">
+                <label for="event-contact">Organizer Contact Email / Phone</label>
+                <input type="text" id="event-contact" placeholder="organizers@college.edu" />
+              </div>
+
+              <div class="form-group full-width">
+                <label for="event-desc">Event Description & Schedule <span class="req">*</span></label>
+                <textarea id="event-desc" rows="4" required placeholder="Describe the event themes, eligibility, prizes, and schedule..."></textarea>
+              </div>
+
+              <div class="form-group full-width">
+                <label>Event Poster Image <span class="req">*</span></label>
+                <div class="mini-upload-box" id="host-poster-box">
+                  <input type="file" id="host-poster-input" accept="image/jpeg,image/png,image/webp,image/bmp" required hidden />
+                  <div id="host-poster-prompt" onclick="document.getElementById('host-poster-input').click()">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Click or drag to select event poster image (JPEG, PNG, WEBP)</span>
+                  </div>
+                  <div id="host-poster-preview" style="display: none;">
+                    <img id="host-preview-img" src="" alt="Poster" />
+                    <div class="host-poster-meta">
+                      <span id="host-poster-filename"></span>
+                      <button type="button" class="btn-remove-preview-sm" id="btn-host-clear-poster" title="Change poster">
+                        <i class="fa-solid fa-xmark"></i> Change Poster
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Quick Samples in Form -->
+                <div class="sample-posters-section" style="margin-top: 0.6rem;">
+                  <span class="sample-label">Or test with samples:</span>
+                  <div class="sample-buttons">
+                    <button type="button" class="sample-btn real" onclick="loadHostSample('real')">
+                      <i class="fa-solid fa-check-circle"></i> Real Hackathon
+                    </button>
+                    <button type="button" class="sample-btn fake" onclick="loadHostSample('fake')">
+                      <i class="fa-solid fa-triangle-exclamation"></i> Suspicious Contest
+                    </button>
+                    <button type="button" class="sample-btn qr" onclick="loadHostSample('symposium')">
+                      <i class="fa-solid fa-qrcode"></i> Real Symposium + QR
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ================= EVENTTRUST AI VERIFICATION SECTION ================= -->
+              <div class="form-group full-width" id="host-verification-container" style="display: none;">
+                <div class="eventtrust-inline-card" id="host-eventtrust-card">
+                  <!-- Loading State -->
+                  <div class="ai-verify-loading" id="host-ai-loading" style="display: none;">
+                    <div class="pulse-radar-mini"></div>
+                    <div>
+                      <h4>EventTrust AI is analyzing poster...</h4>
+                      <p>Running MobileNetV2 feature extraction & QR security verification</p>
+                    </div>
+                  </div>
+
+                  <!-- Verification Result Content -->
+                  <div class="ai-verify-result" id="host-ai-result" style="display: none;">
+                    <!-- Rendered dynamically by app.js matching the exact UI requirement -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-gradient-action" id="btn-submit-event">
+                <i class="fa-solid fa-shield-halved"></i> Publish College Event
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 5: SAFETY ANALYTICS ================= -->
+    <section id="analytics-tab" class="tab-pane">
+      <div class="feed-header">
+        <div>
+          <h2>Authenticity & Platform Safety Metrics</h2>
+          <p class="feed-sub">Real-time statistics on model verification performance and detected threat vectors.</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon-circle blue">
+            <i class="fa-solid fa-calendar-check"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Total Events</span>
+            <strong class="stat-val" id="stat-total-events">4</strong>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-circle green">
+            <i class="fa-solid fa-shield-check"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Verified Real</span>
+            <strong class="stat-val" id="stat-real-events">3</strong>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-circle red">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Suspicious / Blocked</span>
+            <strong class="stat-val" id="stat-fake-events">1</strong>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-circle purple">
+            <i class="fa-solid fa-qrcode"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">QR Codes Detected</span>
+            <strong class="stat-val" id="stat-qr-count">3</strong>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-circle amber">
+            <i class="fa-solid fa-star-half-stroke"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Avg Trust Score</span>
+            <strong class="stat-val" id="stat-avg-trust">73.2%</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Model Architecture Details -->
+      <div class="glass-card arch-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-network-wired"></i> Model & Security Architecture</h3>
+          <span class="badge-pill">Technical Breakdown</span>
+        </div>
+        <div class="arch-content-grid">
+          <div class="arch-box">
+            <h4><i class="fa-solid fa-brain"></i> Vision Backbone</h4>
+            <p><strong>MobileNetV2</strong> pre-trained on ImageNet with fine-tuned authenticity classification head trained for college event poster aesthetics and forged pattern recognition.</p>
+          </div>
+          <div class="arch-box">
+            <h4><i class="fa-solid fa-magnifying-glass-chart"></i> Multi-Pass QR Decoder</h4>
+            <p>4-tier OpenCV extraction pipeline analyzing original, enlarged cubic, high-contrast grayscale, and adaptive threshold matrices to capture low-resolution QR codes.</p>
+          </div>
+          <div class="arch-box">
+            <h4><i class="fa-solid fa-calculator"></i> Trust Score Engine</h4>
+            <p>Weighted composition: <strong>70% Poster Visual Authenticity</strong> + <strong>30% QR Security & Payload Verification</strong> with scam domain penalties.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Unstop Extension Modal -->
+  <div class="modal-overlay" id="extension-modal" style="display: none;">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeExtensionModal()">&times;</button>
+      <div class="modal-body">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <div class="brand-icon" style="margin: 0 auto 0.75rem; width: 50px; height: 50px; font-size: 1.5rem;">
+            <i class="fa-brands fa-chrome"></i>
+          </div>
+          <h2 style="font-size: 1.3rem;">EventTrust AI • Unstop Browser Extension</h2>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.35rem;">
+            Scan any hackathon or competition on <strong>Unstop.com</strong> directly inside your browser.
+          </p>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-card); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+          <h4 style="font-size: 0.9rem; color: var(--accent-blue); margin-bottom: 0.5rem;"><i class="fa-solid fa-bookmark"></i> Method 1: 1-Click Bookmarklet (Instant)</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+            Drag this button to your Browser Bookmarks bar. Whenever you are on an Unstop competition page, click the bookmark to scan instantly!
+          </p>
+          <a href="javascript:(function(){const u=window.location.href;const o=document.createElement('div');o.style.cssText='position:fixed;top:20px;right:20px;z-index:9999999;background:#111827;color:#fff;padding:16px;border-radius:14px;border:1.5px solid #6366f1;box-shadow:0 10px 30px rgba(0,0,0,0.8);font-family:sans-serif;max-width:320px;';o.innerHTML='<div style=\"font-size:13px;font-weight:700;\">🛡️ EventTrust AI</div><div style=\"font-size:11px;color:#94a3b8;margin-top:4px;\">Scanning poster on current page...</div>';document.body.appendChild(o);fetch('http://127.0.0.1:8000/api/verify-url',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:u})}).then(r=>r.json()).then(d=>{const isR=d.verification.poster_result==='REAL';const v=d.verification;o.innerHTML=`<div style=\"display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;\"><strong style=\"color:${isR?'#34d399':'#f87171'};font-size:14px;\">${isR?'🟢 AUTHENTIC':'🔴 SUSPICIOUS'}</strong><span style=\"font-size:14px;font-weight:800;font-family:monospace;\">${v.trust_score}/100</span></div><div style=\"font-size:11px;color:#cbd5e1;line-height:1.4;\"><div><strong>Model:</strong> ${v.real_probability}% Real (${v.poster_confidence}% Conf)</div><div><strong>QR Code:</strong> ${v.qr_status} (${v.qr_result})</div>${v.qr_data?`<div style=\"word-break:break-all;color:#38bdf8;margin-top:4px;\">QR: ${v.qr_data}</div>`:''}</div><button onclick=\"this.parentElement.remove()\" style=\"margin-top:10px;width:100%;padding:4px 8px;background:rgba(255,255,255,0.1);border:none;color:#fff;border-radius:6px;cursor:pointer;font-size:11px;\">Close</button>`;}).catch(e=>{o.innerHTML=`<div style=\"color:#f87171;font-size:12px;\"><strong>Scan Failed:</strong><br>${e.message}<br><br><small>Ensure backend is running at http://127.0.0.1:8000</small></div><button onclick=\"this.parentElement.remove()\" style=\"margin-top:8px;padding:3px 6px;background:#333;color:#fff;border:none;border-radius:4px;\">Close</button>`;});})();" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.4rem 0.85rem;" onclick="alert('Drag this button to your browser Bookmarks Bar!')">
+            🛡️ EventTrust Unstop Shield
+          </a>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-card); border-radius: var(--radius-sm); padding: 1rem;">
+          <h4 style="font-size: 0.9rem; color: #a855f7; margin-bottom: 0.5rem;"><i class="fa-brands fa-chrome"></i> Method 2: Load Extension Folder</h4>
+          <ol style="font-size: 0.8rem; color: var(--text-secondary); padding-left: 1.25rem; line-height: 1.6;">
+            <li>Open Chrome and navigate to <code style="color: #38bdf8;">chrome://extensions</code></li>
+            <li>Enable <strong>Developer mode</strong> in the top right.</li>
+            <li>Click <strong>Load unpacked</strong>.</li>
+            <li>Select the folder: <code style="color: #34d399;">backend/static/unstop-extension</code></li>
+            <li>Navigate to any <code style="color: #38bdf8;">unstop.com</code> hackathon or event to see the live EventTrust shield!</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Details Modal -->
+  <div class="modal-overlay" id="event-modal" style="display: none;">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeEventModal()">&times;</button>
+      <div class="modal-body" id="modal-body-content">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <span>EventTrust AI &copy; 2026 • College Event Authenticity & Verification System</span>
+      <span class="footer-links">
+        <a href="/docs"><i class="fa-solid fa-code"></i> OpenAPI Docs</a> • 
+        <span>Powered by poster_model.keras</span>
+      </span>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

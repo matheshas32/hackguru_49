@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AllCollegeEvent.com — EventTrust AI Browser Scanner Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/extension/style.css">
+  <style>
+    :root {
+      --ace-blue: #2563eb;
+      --ace-indigo: #6366f1;
+      --ace-bg: #0b0f19;
+      --ace-card: #111827;
+      --ace-border: rgba(255, 255, 255, 0.08);
+      --ace-text: #f8fafc;
+      --ace-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--ace-bg);
+      color: var(--ace-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: rgba(11, 15, 25, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--ace-border);
+      padding: 0.9rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+    .brand-title span { color: var(--ace-blue); }
+    .badge-tag {
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid #6366f1;
+      color: #a5b4fc;
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+    .nav-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn-nav {
+      color: var(--ace-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .btn-nav:hover {
+      color: #fff;
+      border-color: var(--ace-border);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .main-wrap {
+      max-width: 1200px;
+      margin: 1.75rem auto;
+      padding: 0 1.5rem;
+      width: 100%;
+      flex: 1;
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .hero h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 0.4rem;
+    }
+    .hero p {
+      color: var(--ace-muted);
+      font-size: 0.95rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* URL Scanner Bar */
+    .scanner-bar-card {
+      background: var(--ace-card);
+      border: 1px solid var(--ace-border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    .scanner-input-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .scanner-input-row input {
+      flex: 1;
+      min-width: 280px;
+      background: #090d16;
+      border: 1px solid var(--ace-border);
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      color: #fff;
+      font-size: 0.92rem;
+      outline: none;
+    }
+    .scanner-input-row input:focus {
+      border-color: var(--ace-blue);
+    }
+    .btn-scan-url {
+      background: var(--ace-blue);
+      color: #fff;
+      border: none;
+      padding: 0.8rem 1.4rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-scan-url:hover { background: #1d4ed8; }
+
+    /* Integration Options Grid */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    .tool-card {
+      background: var(--ace-card);
+      border: 1px solid var(--ace-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    .tool-card h3 {
+      font-size: 1rem;
+      margin-bottom: 0.4rem;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tool-card p {
+      font-size: 0.82rem;
+      color: var(--ace-muted);
+      line-height: 1.4;
+      margin-bottom: 0.85rem;
+    }
+
+    /* Event Cards Grid */
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+    .event-card {
+      background: var(--ace-card);
+      border: 1px solid var(--ace-border);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .event-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+    .event-poster-wrapper {
+      position: relative;
+      width: 100%;
+      height: 240px;
+      background: #000;
+      overflow: hidden;
+    }
+    .event-poster-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .btn-analyze-poster {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1.5px solid #6366f1;
+      color: #fff;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+      transition: all 0.2s;
+    }
+    .btn-analyze-poster:hover {
+      background: #4338ca;
+      transform: scale(1.04);
+    }
+    .event-body {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .event-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #38bdf8;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .event-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin-bottom: 0.4rem;
+      line-height: 1.3;
+    }
+    .event-meta-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.82rem;
+      color: var(--ace-muted);
+      margin-bottom: 0.85rem;
+    }
+    .event-meta-row span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .event-desc {
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+      margin-bottom: 1.25rem;
+      flex: 1;
+    }
+    .event-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--ace-border);
+      padding-top: 0.85rem;
+    }
+    .event-fee {
+      font-weight: 800;
+      color: #10b981;
+      font-size: 0.95rem;
+    }
+    .btn-register-sim {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--ace-border);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    footer {
+      border-top: 1px solid var(--ace-border);
+      padding: 1.5rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--ace-muted);
+      margin-top: 4rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand-wrap">
+      <div class="brand-title">AllCollegeEvent<span>.com</span></div>
+      <span class="badge-tag">Browser Scanner Demo</span>
+    </div>
+    <div class="nav-actions">
+      <a href="/" class="btn-nav">← EventTrust Web Portal</a>
+      <a href="/docs" target="_blank" class="btn-nav">OpenAPI Docs</a>
+      <div style="font-size: 0.78rem; color: #10b981; font-weight: 700;">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span> Local AI Backend Online
+      </div>
+    </div>
+  </header>
+
+  <main class="main-wrap">
+    <div class="hero">
+      <h1>Analyze Any AllCollegeEvent.com Event</h1>
+      <p>
+        EventTrust AI inspects existing college events directly inside your browser. No modifications to AllCollegeEvent.com source code or event data.
+      </p>
+    </div>
+
+    <!-- APPROACH 2: LIVE URL SCANNER -->
+    <div class="scanner-bar-card">
+      <div style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.6rem; color: #38bdf8;">
+        <i class="fa-solid fa-magnifying-glass"></i> Approach 2 — Scan by AllCollegeEvent URL:
+      </div>
+      <div class="scanner-input-row">
+        <input type="url" id="custom-event-url" placeholder="Paste event URL (e.g. https://www.allcollegeevent.com/events/hackathon-2026)" value="https://unstop.com/hackathons/iit-madras-shaastra-ai-hackathon-2026" />
+        <button class="btn-scan-url" id="btn-scan-custom-url">
+          <i class="fa-solid fa-shield-halved"></i> Analyze Event URL
+        </button>
+      </div>
+    </div>
+
+    <!-- APPROACH 1: CHROME EXTENSION & BOOKMARKLET -->
+    <div class="tools-grid">
+      <div class="tool-card">
+        <h3><i class="fa-brands fa-chrome"></i> Approach 1 (Method A) — Chrome Extension</h3>
+        <p>Load the unpacked <code>extension/</code> folder in Chrome to automatically get floating scan badges on every live AllCollegeEvent.com event.</p>
+        <ol style="padding-left: 1.1rem; font-size: 0.78rem; color: var(--ace-muted); line-height: 1.6;">
+          <li>Go to <code style="color: #38bdf8;">chrome://extensions</code> & enable Developer Mode.</li>
+          <li>Click <strong>Load unpacked</strong> & select <code>extension/</code>.</li>
+        </ol>
+      </div>
+
+      <div class="tool-card">
+        <h3><i class="fa-solid fa-bookmark"></i> Approach 1 (Method B) — 1-Click Bookmarklet</h3>
+        <p>Drag this button to your Bookmarks Bar. When browsing AllCollegeEvent.com, click it to run EventTrust AI on the active event.</p>
+        <a href="javascript:(function(){const s=document.createElement('script');s.src='http://127.0.0.1:8000/extension/content.js';document.body.appendChild(s);const c=document.createElement('link');c.rel='stylesheet';c.href='http://127.0.0.1:8000/extension/style.css';document.head.appendChild(c);setTimeout(()=>{if(typeof window.EventTrustScanActivePage==='function'){window.EventTrustScanActivePage();}},300);})();" class="btn-scan-url" style="display: inline-flex; text-decoration: none; padding: 6px 14px; font-size: 0.8rem; background: #6366f1;" onclick="alert('Drag this button to your browser Bookmarks Bar!')">
+          🛡️ EventTrust Scanner
+        </a>
+      </div>
+    </div>
+
+    <!-- SIMULATED ALLCOLLEGEEVENT EXISTING EVENTS -->
+    <h2 class="section-title">
+      <i class="fa-solid fa-calendar-days"></i> Existing AllCollegeEvent.com Events (Click "Analyze" on any poster)
+    </h2>
+
+    <div class="events-grid">
+      <!-- Event 1: Genuine Hackathon 2026 -->
+      <div class="event-card">
+        <div class="event-poster-wrapper">
+          <img id="poster-img-1" src="/static/images/sample_real_hackathon.png" alt="Hackathon 2026" />
+          <button class="btn-analyze-poster" onclick="triggerAnalyzeImage('poster-img-1')">
+            🛡️ Analyze with EventTrust AI
+          </button>
+        </div>
+        <div class="event-body">
+          <span class="event-tag">Hackathon</span>
+          <h3 class="event-title">HACKATHON 2026: National AI Challenge</h3>
+          <div class="event-meta-row">
+            <span><i class="fa-solid fa-location-dot"></i> Coimbatore Campus, Tamil Nadu</span>
+            <span><i class="fa-regular fa-calendar"></i> 27 Aug 2026 • 09:00 AM</span>
+            <span><i class="fa-solid fa-building-columns"></i> PSG College of Technology</span>
+          </div>
+          <p class="event-desc">
+            Inter-college 36-hour hackathon for student developers to build generative AI solutions. Mentored by industry engineers with cash prizes.
+          </p>
+          <div class="event-footer">
+            <span class="event-fee">₹250 Registration</span>
+            <button class="btn-register-sim" onclick="alert('This simulates the original registration button on AllCollegeEvent.')">Register</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event 2: Genuine Symposium with QR -->
+      <div class="event-card">
+        <div class="event-poster-wrapper">
+          <img id="poster-img-2" src="/static/images/sample_real_symposium.png" alt="Kurukshetra 2026" />
+          <button class="btn-analyze-poster" onclick="triggerAnalyzeImage('poster-img-2')">
+            🛡️ Analyze with EventTrust AI
+          </button>
+        </div>
+        <div class="event-body">
+          <span class="event-tag">Symposium</span>
+          <h3 class="event-title">Kurukshetra 2026: Techno-Management Fest</h3>
+          <div class="event-meta-row">
+            <span><i class="fa-solid fa-location-dot"></i> Chennai Campus, Tamil Nadu</span>
+            <span><i class="fa-regular fa-calendar"></i> 28 Sep 2026 • 08:30 AM</span>
+            <span><i class="fa-solid fa-building-columns"></i> College of Engineering, Guindy</span>
+          </div>
+          <p class="event-desc">
+            UNESCO patronized technical symposium featuring robotics, paper presentations, coding sprints, and embedded registration QR codes.
+          </p>
+          <div class="event-footer">
+            <span class="event-fee">Free Entry</span>
+            <button class="btn-register-sim" onclick="alert('Simulated AllCollegeEvent registration.')">Register</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event 3: Suspicious Giveaway Contest -->
+      <div class="event-card">
+        <div class="event-poster-wrapper">
+          <img id="poster-img-3" src="/static/images/sample_fake_event.png" alt="Fake Giveaway" />
+          <button class="btn-analyze-poster" onclick="triggerAnalyzeImage('poster-img-3')">
+            🛡️ Analyze with EventTrust AI
+          </button>
+        </div>
+        <div class="event-body">
+          <span class="event-tag" style="color: #ef4444;">Bait / Contest</span>
+          <h3 class="event-title">URGENT!! Free iPhone 16 Pro + ₹50,000 Cash</h3>
+          <div class="event-meta-row">
+            <span><i class="fa-solid fa-location-dot"></i> Secret Venue (Sent on WhatsApp)</span>
+            <span><i class="fa-regular fa-calendar"></i> 12 Sep 2026 • 12:00 PM</span>
+            <span><i class="fa-solid fa-building-columns"></i> Apex Student Club (Unverified)</span>
+          </div>
+          <p class="event-desc">
+            Pay ₹99 via UPI to claim free iPhone 16 and ticket. Message on Telegram @fastcashnow. Limited 10 slots remaining!
+          </p>
+          <div class="event-footer">
+            <span class="event-fee" style="color: #ef4444;">₹99 Fee</span>
+            <button class="btn-register-sim" onclick="alert('Warning: EventTrust AI flags this event as high risk!')">Register</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    EventTrust AI &copy; 2026 • Prototype Browser Scanner for AllCollegeEvent.com • Powered by MobileNetV2 poster_model.keras
+  </footer>
+
+  <!-- Include Extension Content Script & Overlay Engine -->
+  <script src="/extension/content.js"></script>
+  <script>
+    function triggerAnalyzeImage(imgId) {
+      const img = document.getElementById(imgId);
+      if (img && typeof window.EventTrustScanActivePage === 'function') {
+        // Trigger direct analysis on this image element
+        const scanBtn = img.parentElement.querySelector('.eventtrust-poster-badge-btn');
+        if (scanBtn) {
+          scanBtn.click();
+        } else {
+          // Manual fallback
+          window.EventTrustScanActivePage();
+        }
+      }
+    }
+
+    document.getElementById('btn-scan-custom-url').addEventListener('click', async () => {
+      const urlInput = document.getElementById('custom-event-url').value.trim();
+      if (!urlInput) {
+        alert('Please enter an event URL.');
+        return;
+      }
+
+      if (typeof window.EventTrustScanActivePage === 'function') {
+        const btn = document.getElementById('btn-scan-custom-url');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing...';
+
+        try {
+          const res = await fetch('http://127.0.0.1:8000/api/verify-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: urlInput }),
+          });
+
+          if (!res.ok) throw new Error('Could not fetch poster from the specified event URL.');
+          const data = await res.json();
+          // Trigger floating HUD with verification result
+          const contentScriptHUD = document.getElementById('eventtrust-hud-overlay');
+          if (contentScriptHUD) contentScriptHUD.style.display = 'block';
+          // Dispatch verification data
+          const event = new CustomEvent('eventtrust-url-scanned', { detail: data });
+          window.dispatchEvent(event);
+        } catch (err) {
+          alert('Scan Error: ' + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Analyze Event URL';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
