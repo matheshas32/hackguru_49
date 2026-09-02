@@ -1,1 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>EventTrust AI</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            border: 2px dashed #aaa;
+            padding: 40px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            margin: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #222;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #result {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 12px;
+            background: #f8f8f8;
+        }
+
+        .score {
+            font-size: 35px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px;
+        }
+
+        .status {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .details {
+            margin-top: 20px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>EventTrust AI</h1>
+
+    <p class="subtitle">
+        College Event Poster Authenticity Verification
+    </p>
+
+    <div class="upload-box">
+
+        <h3>Upload Event Poster</h3>
+
+        <input
+            type="file"
+            id="posterInput"
+            accept="image/*"
+        >
+
+        <button onclick="verifyPoster()">
+            Verify Poster
+        </button>
+
+    </div>
+
+    <div id="loading">
+        <h3>Analyzing poster...</h3>
+        <p>EventTrust AI is checking the poster.</p>
+    </div>
+
+    <div id="result">
+
+        <h2>EventTrust AI Analysis</h2>
+
+        <div class="score" id="trustScore">
+            -
+        </div>
+
+        <div class="status" id="status">
+            -
+        </div>
+
+        <div class="details">
+
+            <p>
+                <strong>Prediction:</strong>
+                <span id="prediction">-</span>
+            </p>
+
+            <p>
+                <strong>Confidence:</strong>
+                <span id="confidence">-</span>
+            </p>
+
+            <p>
+                <strong>Risk Level:</strong>
+                <span id="riskLevel">-</span>
+            </p>
+
+            <p>
+                <strong>QR Detected:</strong>
+                <span id="qrDetected">-</span>
+            </p>
+
+            <p>
+                <strong>QR Verified:</strong>
+                <span id="qrVerified">-</span>
+            </p>
+
+            <h3>Issues</h3>
+
+            <ul id="issues"></ul>
+
+            <h3>Positive Indicators</h3>
+
+            <ul id="positiveIndicators"></ul>
+
+            <p>
+                <strong>Recommendation:</strong>
+                <span id="recommendation">-</span>
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+async function verifyPoster() {
+
+    const input = document.getElementById("posterInput");
+
+    if (!input.files.length) {
+
+        alert("Please select an event poster first.");
+
+        return;
+    }
+
+    const file = input.files[0];
+
+    const formData = new FormData();
+
+    formData.append("file", file);
+
+    document.getElementById("loading").style.display = "block";
+    document.getElementById("result").style.display = "none";
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:8000/api/verify-poster",
+            {
+                method: "POST",
+                body: formData
+            }
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Backend returned error: " + response.status
+            );
+
+        }
+
+        const data = await response.json();
+
+        displayResult(data);
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("result").style.display = "block";
+
+        document.getElementById("result").innerHTML =
+            "<p class='error'>" +
+            "Could not connect to EventTrust AI backend.<br>" +
+            "Make sure FastAPI is running." +
+            "</p>";
+
+    } finally {
+
+        document.getElementById("loading").style.display = "none";
+
+    }
+
+}
+
+
+function displayResult(data) {
+
+    document.getElementById("result").style.display = "block";
+
+    document.getElementById("trustScore").textContent =
+        data.trust_score + "/100";
+
+    document.getElementById("status").textContent =
+        data.status;
+
+    document.getElementById("prediction").textContent =
+        data.prediction;
+
+    document.getElementById("confidence").textContent =
+        (data.confidence * 100).toFixed(1) + "%";
+
+    document.getElementById("riskLevel").textContent =
+        data.risk_level;
+
+    document.getElementById("qrDetected").textContent =
+        data.qr_detected ? "Yes" : "No";
+
+    document.getElementById("qrVerified").textContent =
+        data.qr_verified ? "Yes" : "No";
+
+    document.getElementById("recommendation").textContent =
+        data.recommendation;
+
+
+    const issuesList =
+        document.getElementById("issues");
+
+    issuesList.innerHTML = "";
+
+    if (data.issues && data.issues.length > 0) {
+
+        data.issues.forEach(issue => {
+
+            const li = document.createElement("li");
+
+            li.textContent = "⚠ " + issue;
+
+            issuesList.appendChild(li);
+
+        });
+
+    } else {
+
+        issuesList.innerHTML =
+            "<li>No major issues detected.</li>";
+
+    }
+
+
+    const positiveList =
+        document.getElementById("positiveIndicators");
+
+    positiveList.innerHTML = "";
+
+    if (
+        data.positive_indicators &&
+        data.positive_indicators.length > 0
+    ) {
+
+        data.positive_indicators.forEach(indicator => {
+
+            const li = document.createElement("li");
+
+            li.textContent = "✓ " + indicator;
+
+            positiveList.appendChild(li);
+
+        });
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
